@@ -33,12 +33,11 @@ class Calculator:
             x = x - self.f(x)/self.f_prime(x)
         return x
 
-   
-
 
 if __name__ == '__main__':
     calculator = Calculator()
     print(calculator.dichotomy_method())
     print(calculator.newton_method())
+
     
 
