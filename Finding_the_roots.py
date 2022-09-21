@@ -92,8 +92,10 @@ class Calculator:
     def iteration_method(self):
         self.phi_y = self.func.phi(self.real_x)
         x = (self.segment[0] + self.segment[1]) / 2
+        x_prev = 0
         i = 0
-        while abs(self.func.f(x)) > self.e:
+        while abs(x_prev - x) > self.e:
+            x_prev = x
             x = self.func.phi(x)
             i += 1
         return result(x, i)
