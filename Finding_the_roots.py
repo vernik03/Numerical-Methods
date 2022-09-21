@@ -37,10 +37,11 @@ class function4:
         
     f = lambda self, x: self.a*x + np.cos(x) + self.b
     df = lambda self, x: self.a + np.sin(x)
-    phi = lambda self, x: np.sin(x)/self.a
+    #phi = lambda self, x: np.sin(x)/self.a
+    phi = lambda self, x: (-np.cos(x)-self.b)/self.a
    
 class Calculator:
-    def __init__(self, e=0.0001, segment = (-5,0), start = -5, func = function4()):
+    def __init__(self, e=0.0001, segment = (-3,0), start = -5, func = function4()):
         self.e = e
 
         self.start = start
@@ -81,12 +82,10 @@ class Calculator:
         return x
 
     def iteration_method(self):
-        
         self.phi_y = self.func.phi(self.real_x)
         x = (self.segment[0] + self.segment[1]) / 2
         while abs(self.func.f(x)) > self.e:
-            t = self.func.phi(x)
-            x += t * self.func.f(x)
+            x = self.func.phi(x)
         return float(x)
 
     def draw(self):
@@ -99,7 +98,6 @@ class Calculator:
 
 
 if __name__ == '__main__':
-    # print((-np.cos(-1.5)-1)/3-(-1.5))
     calculator = Calculator()
     print(calculator.dichotomy_method())
     print(calculator.newton_method())
