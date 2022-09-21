@@ -38,6 +38,11 @@ class function4:
     f = lambda self, x: self.a*x + np.cos(x) + self.b
     df = lambda self, x: self.a + np.sin(x)
     phi = lambda self, x: (-np.cos(x)-self.b)/self.a
+
+class result:
+    def __init__(self, x, i):
+        self.x = x
+        self.i = i
    
 class Calculator:
     def __init__(self, e=0.0001, segment = (-3,0), start = -5, func = function4()):
@@ -55,37 +60,45 @@ class Calculator:
 
     def dichotomy_method(self):
         a, b = self.segment
+        i = 0
         while abs(b-a) > self.e:
             x = (a+b)/2
+            i+=1
             if abs(self.func.f(x)) <= self.e:
-                return x
+                return result(x, i)
             if self.func.f(a)*self.func.f(x) < 0:
                 b = x
             else:
                 a = x
-        return x
+        return result(x, i)
 
     def newton_method(self):
         x = self.func.f(self.start)/self.func.df(self.start)
         x_prev = 0
+        i = 0
         while abs(x_prev - x) > self.e:
             x_prev = x
             x -= self.func.f(x)/self.func.df(x)
-        return x
+            i += 1
+        return result(x, i)
 
     def relaxation_method(self):
         x = (self.segment[0] + self.segment[1]) / 2
         t = -2/(self.der_y.max() + self.der_y.min())
+        i = 0
         while abs(self.func.f(x)) > self.e:
             x += t * self.func.f(x)
-        return x
+            i += 1
+        return result(x, i)
 
     def iteration_method(self):
         self.phi_y = self.func.phi(self.real_x)
         x = (self.segment[0] + self.segment[1]) / 2
+        i = 0
         while abs(self.func.f(x)) > self.e:
             x = self.func.phi(x)
-        return float(x)
+            i += 1
+        return result(x, i)
 
     def draw(self):
         plt.plot(self.real_x, self.real_y, label='f(x)')
@@ -95,13 +108,15 @@ class Calculator:
         plt.grid(True)
         plt.show()
 
+def print_result(result):
+    print("Результат: " + str(result.x) + "\tКількость кроків: " + str(result.i))
 
 if __name__ == '__main__':
     calculator = Calculator()
-    print(calculator.dichotomy_method())
-    print(calculator.newton_method())
-    print(calculator.relaxation_method())
-    print(calculator.iteration_method())
+    print_result(calculator.dichotomy_method())
+    print_result(calculator.newton_method())
+    print_result(calculator.relaxation_method())
+    print_result(calculator.iteration_method())
     calculator.draw()
     
 
