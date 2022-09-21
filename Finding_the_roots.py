@@ -5,8 +5,6 @@ from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
-import warnings
-warnings.filterwarnings("ignore")
 
 class function1:
     def __init__(self):
