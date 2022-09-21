@@ -37,7 +37,6 @@ class function4:
         
     f = lambda self, x: self.a*x + np.cos(x) + self.b
     df = lambda self, x: self.a + np.sin(x)
-    #phi = lambda self, x: np.sin(x)/self.a
     phi = lambda self, x: (-np.cos(x)-self.b)/self.a
    
 class Calculator:
