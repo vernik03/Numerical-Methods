@@ -34,7 +34,7 @@ class function4:
         self.b = 1.0
         
     f = lambda self, x: self.a*x + np.cos(x) + self.b
-    df = lambda self, x: self.a + np.sin(x)
+    df = lambda self, x: self.a - np.sin(x)
     phi = lambda self, x: (-np.cos(x)-self.b)/self.a
 
 class result:
@@ -68,6 +68,7 @@ class Calculator:
                 b = x
             else:
                 a = x
+        plt.scatter(x, 0, color='orange', s=40, marker='o')
         return result(x, i)
 
     def newton_method(self):
@@ -78,6 +79,7 @@ class Calculator:
             x_prev = x
             x -= self.func.f(x)/self.func.df(x)
             i += 1
+        plt.scatter(x, 0, color='orange', s=40, marker='o')
         return result(x, i)
 
     def relaxation_method(self):
@@ -87,6 +89,7 @@ class Calculator:
         while abs(self.func.f(x)) > self.e:
             x += t * self.func.f(x)
             i += 1
+        plt.scatter(x, 0, color='orange', s=40, marker='o')
         return result(x, i)
 
     def iteration_method(self):
@@ -98,6 +101,7 @@ class Calculator:
             x_prev = x
             x = self.func.phi(x)
             i += 1
+        plt.scatter(x, 0, color='orange', s=40, marker='o')
         return result(x, i)
 
     def draw(self):
