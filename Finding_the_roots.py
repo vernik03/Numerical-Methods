@@ -12,10 +12,15 @@ class Method(Enum):
     SEIDEL = 3
    
 class Calculator:
-    def __init__(self, A, b, e):
-        self.A = A
-        self.b = b
+    def __init__(self, e, n, type):
+        self.A = [[1] * n for i in range(n)]
+        self.b = [1] * n
         self.e = e
+        if n > 0:
+            if type == Matrix.RANDOM:
+                self.randMatrix(n, 1)
+            elif type == Matrix.HILBERT:
+                self.HilbertMatrix(n)
 
     def print(self, type, toOutput):
         if type == Method.LU:
@@ -157,7 +162,7 @@ class Calculator:
                             s += self.A[i][j] * x[j]
                     x1[i] = (self.b[i] - s) / self.A[i][i]
                 if math.sqrt(sum([(x1[i] - x[i]) ** 2 for i in range(n)])/sum([(x1[i]) ** 2 for i in range(n)])) < self.e:
-                    break
+                    break 
                 x = copy.deepcopy(x1)
             return x
         else:
@@ -196,10 +201,10 @@ if __name__ == '__main__':
      [-1, 1, 10]]
      
     b = [11, 10, 10]
-    calc = Calculator(A, b, 0.0001)
-    calc.print(Method.LU, calc.LU(3, Matrix.RANDOM))
-    calc.print(Method.JACOBI, calc.Jacobi(3, Matrix.RANDOM))
-    calc.print(Method.SEIDEL, calc.Seidel(3, Matrix.RANDOM))
+    calc = Calculator( 0.0001, 3, Matrix.HILBERT)
+    calc.print(Method.LU, calc.LU())
+    calc.print(Method.JACOBI, calc.Jacobi())
+    calc.print(Method.SEIDEL, calc.Seidel())
     
     
     
