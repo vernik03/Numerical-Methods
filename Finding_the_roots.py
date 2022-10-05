@@ -1,5 +1,15 @@
 import math
 import copy
+from enum import Enum
+
+class Matrix(Enum):
+    RANDOM = 1
+    HILBERT = 2
+
+class Method(Enum):
+    LU = 1
+    JACOBI = 2
+    SEIDEL = 3
    
 class Calculator:
     def __init__(self, A, b, e):
@@ -8,17 +18,17 @@ class Calculator:
         self.e = e
 
     def print(self, type, toOutput):
-        if type == 'LU':
+        if type == Method.LU:
             print('L:')
             self.matrix(toOutput[0])
             print('U:')
             self.matrix(toOutput[1])
             print()
-        elif type == 'Jacobi':
+        elif type == Method.JACOBI:
             print('Jacobi:')
             self.list(toOutput)
             print()
-        elif type == 'Seidel':
+        elif type == Method.SEIDEL:
             print('Seidel:')
             self.list(toOutput)
             print()
@@ -72,11 +82,20 @@ class Calculator:
 
     def randMatrix(self, n, isCorect = 0):
         import random
-        self.A = [[random.randint(1, 10) for i in range(n)] for j in range(n)]
-        self.b = [random.randint(1, 10) for i in range(n)]
+        self.A = [[random.randint(1, 100) for i in range(n)] for j in range(n)]
+        self.b = [random.randint(1, 100) for i in range(n)]
         if isCorect:
             for i in range(n):
                 self.A[i][i] = sum(self.A[i]) + 1
+    
+
+    def HilbertMatrix(self, n):
+        self.A = [[0] * n for i in range(n)]
+        self.b = [1] * n      
+        for i in range(n):
+            for j in range(n):
+                self.A[i][j] = 1/(i + j + 1)
+
 
     def isCorrectArray(self):
         for row in range(0, len(self.A)):
@@ -91,9 +110,12 @@ class Calculator:
         return True
 
     # Решение систем линейныъ уравнений методом LU-разложения с вібором главного элемента
-    def LU(self, random = 0):
-        if random > 0:
-            self.randMatrix(random)
+    def LU(self, n = 0, type = Matrix.RANDOM):
+        if n > 0:
+            if type == Matrix.RANDOM:
+                self.randMatrix(n)
+            elif type == Matrix.HILBERT:
+                self.HilbertMatrix(n)
         n = len(self.A)
         L = [[0] * n for i in range(n)]
         U = [[0] * n for i in range(n)]
@@ -117,9 +139,12 @@ class Calculator:
         return L, U
     
     # Решение систем линейныъ уравнений методом Якоби
-    def Jacobi(self, random = 0):
-        if random > 0:
-            self.randMatrix(random, 1)
+    def Jacobi(self, n = 0, type = Matrix.RANDOM):
+        if n > 0:
+            if type == Matrix.RANDOM:
+                self.randMatrix(n, 1)
+            elif type == Matrix.HILBERT:
+                self.HilbertMatrix(n)
         if self.isCorrectArray():
             n = len(self.A)
             x = [1] * n
@@ -139,9 +164,12 @@ class Calculator:
             return None
 
         # Решение систем линейныъ уравнений методом Зейделя
-    def Seidel(self, random = 0):
-        if random > 0:
-            self.randMatrix(random, 1)
+    def Seidel(self, n = 0, type = Matrix.RANDOM):
+        if n > 0:
+            if type == Matrix.RANDOM:
+                self.randMatrix(n, 1)
+            elif type == Matrix.HILBERT:
+                self.HilbertMatrix(n)
         if self.isCorrectArray():
             n = len(self.A)
             x = [1] * n
@@ -168,10 +196,10 @@ if __name__ == '__main__':
      [-1, 1, 10]]
      
     b = [11, 10, 10]
-    calc = Calculator(A, b, 0.01)
-    calc.print('LU', calc.LU())
-    calc.print('Jacobi', calc.Jacobi())
-    calc.print('Seidel', calc.Seidel())
+    calc = Calculator(A, b, 0.0001)
+    calc.print(Method.LU, calc.LU(3, Matrix.RANDOM))
+    calc.print(Method.JACOBI, calc.Jacobi(3, Matrix.RANDOM))
+    calc.print(Method.SEIDEL, calc.Seidel(3, Matrix.RANDOM))
     
     
     
