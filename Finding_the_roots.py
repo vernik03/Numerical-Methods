@@ -196,12 +196,8 @@ class Calculator:
 
 
 if __name__ == '__main__':
-    A = [[10, 1, -1],
-     [1, 10, -1],
-     [-1, 1, 10]]
-     
-    b = [11, 10, 10]
-    calc = Calculator( 0.0001, 3, Matrix.HILBERT)
+    calc = Calculator( 0.0001, 3, Matrix.RANDOM)
+    calc.matrix(calc.A)
     calc.print(Method.LU, calc.LU())
     calc.print(Method.JACOBI, calc.Jacobi())
     calc.print(Method.SEIDEL, calc.Seidel())
