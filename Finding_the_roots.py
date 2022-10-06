@@ -196,11 +196,11 @@ class Calculator:
                 det += (-1)**i * A[0][i] * self.det(self.minor(A, 0, i))
             return det
     
-    # найти минор матрицы A
+    
     def minor(self, A, i, j):
         return [row[:j] + row[j+1:] for row in (A[:i]+A[i+1:])]
 
-    # Решение систем линейныъ уравнений методом LU-разложения с вібором главного элемента
+    
     def LU(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
             if type == Matrix.RANDOM:
@@ -229,7 +229,7 @@ class Calculator:
                 L[i][j] = (self.A[i][j] - s2) / U[j][j]
         return L, U
     
-    # Решение систем линейныъ уравнений методом Якоби
+    
     def Jacobi(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
             if type == Matrix.RANDOM:
@@ -256,7 +256,7 @@ class Calculator:
         else:
             return None
 
-        # Решение систем линейныъ уравнений методом Зейделя
+       
     def Seidel(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
             if type == Matrix.RANDOM:
@@ -283,30 +283,7 @@ class Calculator:
             return x
         else:
             return None
-        
-        # Решение систем линейныъ уравнений методом квадратних коренів
-
-    # def Cholesky(self, n = 0, type = Matrix.RANDOM):
-    #     if n > 0:
-    #         if type == Matrix.RANDOM:
-    #             self.randMatrix(n, 1)
-    #         elif type == Matrix.HILBERT:
-    #             self.HilbertMatrix(n)
-    #     if self.isCorrectArray(Method.CHOLESKY):
-    #         n = len(self.A)
-    #         L = [[0] * n for i in range(n)]
-    #         for i in range(n):
-    #             for j in range(i + 1):
-    #                 s = sum(L[i][k] * L[j][k] for k in range(j))
-    #                 if i == j:
-    #                     L[i][j] = np.sqrt(abs(self.A[i][i] - s))
-    #                 else:
-    #                     L[i][j] = (self.A[i][j] - s) / L[j][j]
-    #         return L
-    #     else:
-    #         return None
-
-     # Решение систем линейныъ уравнений методом Холецкого
+     
     def Cholesky(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
             if type == Matrix.RANDOM:
