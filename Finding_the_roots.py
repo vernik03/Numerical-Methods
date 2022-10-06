@@ -126,32 +126,32 @@ class Calculator:
     def isCorrectArray(self, Method = Method.LU):
         for row in range(0, len(self.A)):
             if( len(self.A[row]) != len(self.b) ):
-                print('Не соответствует размерность')
-                return False
-
-        for row in range(0, len(self.A)):
-            if( self.A[row][row] == 0 ):
-                print('Нулевые элементы на главной диагонали')
+                print('Size does not match')
                 return False
 
         if Method == Method.CHOLESKY:
             if not self.isSymmetric():
-                print('Матрица не симметрична')
+                print('The matrix is not symmetrical')
                 return False
             if self.A != self.transpose(self.A):
-                print('Матрица не равна транопонированной')
+                print('Matrix is not equal to transposed')
                 return False
             if self.determinant(self.A) <= 0:
-                print('Определитель <= 0')
+                print('Determinant <= 0')
                 return False
 
         if Method == Method.JACOBI or Method == Method.SEIDEL:
             # if np.linalg.norm(self.A) >= 1:
             #     print('Не сходится')
             #     return False
+            for row in range(0, len(self.A)):
+                if( self.A[row][row] == 0 ):
+                    print('Zero elements on the main diagonal')
+                    return False
             if not self.conditionJacobi():
-                print('Не сходится')
+                print('The method does not converge')
                 return False
+            
         return True
 
     def conditionJacobi(self):
