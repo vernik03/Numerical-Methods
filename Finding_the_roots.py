@@ -10,7 +10,6 @@ class Method(Enum):
     LU = 1
     JACOBI = 2
     SEIDEL = 3
-    CHOLESKY = 4
    
 class Calculator:
     def __init__(self, e, A = 0, b = 0, n = 0, type = Matrix.RANDOM):
@@ -33,18 +32,14 @@ class Calculator:
                 self.matrix(toOutput[0])
                 print('U:')
                 self.matrix(toOutput[1])
+                print('result:')
+                self.list(toOutput[2])
             elif type == Method.JACOBI:
                 print('Jacobi:')
                 self.list(toOutput)
             elif type == Method.SEIDEL:
                 print('Seidel:')
                 self.list(toOutput)
-            elif type == Method.CHOLESKY:
-                print('Cholesky:')
-                print('L:')
-                self.matrix(toOutput)
-                print('L-tranpose:')
-                self.matrix(self.transpose(toOutput))
             else:
                 print('Error')
             print()
@@ -55,12 +50,9 @@ class Calculator:
                 print('in Jacobi')
             elif type == Method.SEIDEL:
                 print('in Seidel')
-            elif type == Method.CHOLESKY:
-                print('in Cholesky')
             else:
                 print('Error')
             print()
-
 
     def maxDigit(self, matrix):
         max = 0
@@ -81,7 +73,7 @@ class Calculator:
         return max
 
     def matrix(self, matrix):
-        digits = int(np.log10(int(1/self.e)))+1
+        digits = int(np.log10(int(1/self.e)))
         for row in matrix:
             for elem in row:
                 separator = '  ' if elem >= 0 else ' '
@@ -98,14 +90,11 @@ class Calculator:
                 print(separator + '{:.{}f}'.format(round(elem, digits), digits) , end='')  
             print()
         
-
     def list(self, list):
-        digits = int(np.log10(int(1/self.e)))+1
+        digits = int(np.log10(int(1/self.e)))
         for i in range(len(list)):
             print('x' + str(i+1) + ' = ' + '{:.{}f}'.format(round(list[i], digits), digits))    
-            
-            
-
+                        
     def randMatrix(self, n, isCorect = 0):
         import random
         self.A = [[random.randint(1, 10) for i in range(n)] for j in range(n)]
@@ -114,7 +103,6 @@ class Calculator:
             for i in range(n):
                 self.A[i][i] = sum(self.A[i]) + 1
     
-
     def HilbertMatrix(self, n):
         self.A = [[0] * n for i in range(n)]
         self.b = [1] * n      
@@ -122,28 +110,13 @@ class Calculator:
             for j in range(n):
                 self.A[i][j] = 1/(i + j + 1)
 
-
     def isCorrectArray(self, Method = Method.LU):
         for row in range(0, len(self.A)):
             if( len(self.A[row]) != len(self.b) ):
                 print('Size does not match')
                 return False
 
-        if Method == Method.CHOLESKY:
-            if not self.isSymmetric():
-                print('The matrix is not symmetrical')
-                return False
-            if self.A != self.transpose(self.A):
-                print('Matrix is not equal to transposed')
-                return False
-            if self.determinant(self.A) <= 0:
-                print('Determinant <= 0')
-                return False
-
         if Method == Method.JACOBI or Method == Method.SEIDEL:
-            # if np.linalg.norm(self.A) >= 1:
-            #     print('Не сходится')
-            #     return False
             for row in range(0, len(self.A)):
                 if( self.A[row][row] == 0 ):
                     print('Zero elements on the main diagonal')
@@ -174,17 +147,6 @@ class Calculator:
     def transpose(self, matrix):
         return list(map(list, zip(*matrix)))
 
-    def determinant(self, matrix):
-        if len(matrix) == 2:
-            return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
-        else:
-            det = 0
-            for i in range(len(matrix)):
-                det += ((-1) ** i) * matrix[0][i] * self.determinant([row[:i] + row[i+1:] for row in (matrix[1:])])
-            return det
-
-
-    # найти определитель матрицы A
     def det(self, A):
         if len(A) == 1:
             return A[0][0]
@@ -196,39 +158,47 @@ class Calculator:
                 det += (-1)**i * A[0][i] * self.det(self.minor(A, 0, i))
             return det
     
-    
     def minor(self, A, i, j):
         return [row[:j] + row[j+1:] for row in (A[:i]+A[i+1:])]
 
-    
     def LU(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
             if type == Matrix.RANDOM:
                 self.randMatrix(n)
             elif type == Matrix.HILBERT:
                 self.HilbertMatrix(n)
-        n = len(self.A)
-        L = [[0] * n for i in range(n)]
-        U = [[0] * n for i in range(n)]
-        for i in range(n):
+        n_y = len(self.A)
+        n_x = len(self.A[0])
+        L = [[0] * n_x for i in range(n_y)]
+        U = [[0] * n_x for i in range(n_y)]
+        for i in range(n_y):
             L[i][i] = 1
-        for i in range(n):
-            for j in range(n):
+        # decomposition of matrix
+        for i in range(n_y):
+            for j in range(n_x):
                 if i <= j:
-                    s1 = sum(U[k][j] * L[i][k] for k in range(i))
-                    U[i][j] = self.A[i][j] - s1
-                if i > j:
-                    s2 = sum(U[k][j] * L[i][k] for k in range(j))
-                    L[i][j] = (self.A[i][j] - s2) / U[j][j]
-        for i in range(n):
-            for i in range(j + 1):
-                s1 = sum(U[k][j] * L[i][k] for k in range(i))
-                U[i][j] = self.A[i][j] - s1
-            for i in range(j, n):
-                s2 = sum(U[k][j] * L[i][k] for k in range(j))
-                L[i][j] = (self.A[i][j] - s2) / U[j][j]
-        return L, U
-    
+                    U[i][j] = self.A[i][j] - sum([L[i][k] * U[k][j] for k in range(i)])
+                else:
+                    L[i][j] = (self.A[i][j] - sum([L[i][k] * U[k][j] for k in range(j)])) / U[j][j]
+        # lu = L+U-I
+        # find solution of Ly = b
+        y = [0] * n_y
+        for i in range(n_y):
+            y[i] = self.b[i]
+            for j in range(i):
+                y[i] -= L[i][j] * y[j]
+            y[i] /= L[i][i]        
+        # find solution of Ux = y
+        x = [0] * n_y
+        for i in range(n_y-1, -1, -1):
+            x[i] = y[i]
+            for j in range(i+1, n_y):
+                x[i] -= U[i][j] * x[j]
+            x[i] /= U[i][i]
+        return L, U, x
+        
+    def findNorm(self, array):
+        return max([abs(i) for i in array])       
     
     def Jacobi(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
@@ -248,7 +218,8 @@ class Calculator:
                         if i != j:
                             s += self.A[i][j] * x[j]
                     x1[i] = (self.b[i] - s) / self.A[i][i]
-                if np.sqrt(sum([(x1[i] - x[i]) ** 2 for i in range(n)])/sum([(x1[i]) ** 2 for i in range(n)])) < self.e:
+                # if np.sqrt(sum([(x1[i] - x[i]) ** 2 for i in range(n)])/sum([(x1[i]) ** 2 for i in range(n)])) < self.e:
+                if self.findNorm([(x1[i] - x[i]) for i in range(n)]) < self.e:
                     break 
                 x = copy.deepcopy(x1)
                 steps += 1
@@ -256,7 +227,6 @@ class Calculator:
         else:
             return None
 
-       
     def Seidel(self, n = 0, type = Matrix.RANDOM):
         if n > 0:
             if type == Matrix.RANDOM:
@@ -276,47 +246,17 @@ class Calculator:
                     for j in range(i + 1, n):
                         s += self.A[i][j] * x[j]
                     x1[i] = (self.b[i] - s) / self.A[i][i]
-                if np.sqrt(sum([(x1[i] - x[i]) ** 2 for i in range(n)])/sum([(x1[i]) ** 2 for i in range(n)])) < self.e:
+                if self.findNorm([(x1[i] - x[i]) for i in range(n)]) < self.e:
                     break
                 x = copy.deepcopy(x1)
                 steps += 1
             return x
         else:
             return None
-     
-    def Cholesky(self, n = 0, type = Matrix.RANDOM):
-        if n > 0:
-            if type == Matrix.RANDOM:
-                self.randMatrix(n, 1)
-            elif type == Matrix.HILBERT:
-                self.HilbertMatrix(n)
-        if self.isCorrectArray(Method.CHOLESKY):
-            n = len(self.A)
-            L = [[0] * n for i in range(n)]
-            for i in range(n):
-                for j in range(i + 1):
-                    s = sum(L[i][k] * L[j][k] for k in range(j))
-                    if i == j:
-                        L[i][j] = np.sqrt(self.A[i][i] - s)
-                    else:
-                        L[i][j] = (self.A[i][j] - s) / L[j][j]
-            return L
-        else:
-            return None
         
-        
-
 
 if __name__ == '__main__':
-    # A = [[1, 2, 3], [2, 5, 5], [3, 5, 6]]
-    # b = [1, 2, 3]
-    A = [[10, 1, 0, 0, 0],
-         [1, 30, 1, 0, 0],
-         [0, 1, 20, 1, 0],
-         [0, 0, 1, 20, 2],
-         [0, 0, 0, 2, 10]]
-    b = [1, 3, 2, 2, 3]
-    calc = Calculator( 0.01, A, b, 5, Matrix.RANDOM)
+    calc = Calculator( 0.01, 0, 0, 5, Matrix.RANDOM)
     print("A:")
     calc.matrix(calc.A)
     print()
@@ -328,7 +268,6 @@ if __name__ == '__main__':
     calc.print(Method.LU, calc.LU())
     calc.print(Method.JACOBI, calc.Jacobi())
     calc.print(Method.SEIDEL, calc.Seidel())
-    calc.print(Method.CHOLESKY, calc.Cholesky())
     
     
     
