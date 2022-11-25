@@ -20,9 +20,7 @@ class system:
 class system2:
     def __init__(self, n):
         self.n = n
-
-    graph = " "
-
+        
     def f(self, arr, i):
         result = 0
         for j in range(len(arr)):
