@@ -1,137 +1,158 @@
-import random
-from traceback import format_tb
 import numpy as np
+import numpy.polynomial.polynomial as polynom
+import matplotlib
 import matplotlib.pyplot as plt
-import time
 
+f1 = lambda x: np.cos(x) + x * np.sin(x)
 
-class system:
-    graph = "https://www.geogebra.org/calculator/qp7ynmja"
-    n = 0
+class Interpolation:
+    def __init__(self, func = f1, x_start= -10, x_end = 10, n=10, points = 1000):
+        self.x = np.linspace(x_start, x_end, points)
+        self.x_interval = np.linspace(x_start, x_end, n)
+        self.fx_interval = f1(self.x_interval)
+        self.values = np.array([self.x_interval, self.fx_interval]).T
 
-    f1 = lambda arr: arr[0]**2 / arr[1]**2 - np.cos(arr[1]) - 2
-    dxf1 = lambda arr: (2*arr[0])/arr[1]**2
-    dyf1 = lambda arr: (-2*arr[0]**2)/arr[1]**3 + np.sin(arr[1])
-
-    f2 = lambda arr: arr[0]**2 + arr[1]**2 - 6
-    dxf2 = lambda arr: 2*arr[0]
-    dyf2 = lambda arr: 2*arr[1]
-
-class system2:
-    def __init__(self, n):
-        self.n = n
+    def calculate(self):
+        self.lagrange_value = self.lagrange_interpolation()
+        self.newton_value = self.newton_interpolation()
+        self.spline_value = self.spline_interpolation()
         
-    def f(self, arr, i):
-        result = 0
-        for j in range(len(arr)):
-            if i == j:
-                result += arr[j]**3.0 - (j+1)**3.0
-            else:
-                result += arr[j]**2.0 - (j+1)**2.0
-        return result
-    
-    def df(self, arr, i): 
-        result = []
-        for j in range(len(arr)):
-            if i == j:
-                result.append(3.0*arr[j]**2.0)
-            else:
-                result.append(2.0*arr[j])  
-        return result
-        
+        print(f"Lagrange polynom: {self.lagrange_value}\n")
+        print(f"Newton polynom: {self.newton_value}\n")
+        print(f"Spline interpolation: {self.spline_value}\n")
 
-class Calculator:
-    def __init__(self, eps, system):
-        self.system = system
-        self.e = eps
-
-    def jacobian(self, f, arr):
-        # print("n = ", f.n)
-        if f.n > 0:
-            for i in range(f.n):
-                if i == 0:
-                    J = np.array([f.df(arr, i)])
-                else:
-                    J = np.append(J, [f.df(arr, i)], axis=0)
-            return J
-        else:
-            return np.array([[f.dxf1(arr), f.dyf1(arr)], [f.dxf2(arr), f.dyf2(arr)]])
-
-    def newton(self, arr): 
-        while True:
-            A = self.jacobian(self.system, arr)
-            print("A = ", A)
-            if self.system.n > 0:
-                F = np.array([self.system.f(arr, i) for i in range(self.system.n)])
-            else:
-                F = np.array([self.system.f1(arr), self.system.f2(arr)]) 
-            # print("F = ", F)
-            delta = np.linalg.solve(A, F)
-            for i in range(len(arr)):
-                arr[i] -= delta[i]
-            if np.linalg.norm(delta) <= self.e:
-                return arr
-
-    def newton_mod(self, arr):
-        A = self.jacobian(self.system, arr)
-        print("A = ", A)
-        while True:          
-            if self.system.n > 0:
-                F = np.array([self.system.f(arr, i) for i in range(self.system.n)])
-            else:
-                F = np.array([self.system.f1(arr), self.system.f2(arr)]) 
-            delta = np.linalg.solve(A, F)
-            for i in range(len(arr)):
-                arr[i] -= delta[i]
-            print(arr)
-            time.sleep(1)
-            if np.linalg.norm(delta) <= self.e:
-                return arr
-
-    def simple_iteration(self, arr):
-        while True:
-            if self.system.n > 0:
-                for i in range(self.system.n):
-                    arr[i] = self.system.f(arr, i)
-            else:
-                print(arr)
-                time.sleep(1)
-                arr[0] = self.system.f1(arr)
-                arr[1] = self.system.f2(arr)  
-            if np.linalg.norm(arr) <= self.e:
-                return arr
-
-
-    def draw(self, a, b):
-        if self.system.n > 2:
-            return print("Can't draw in dimensions higher than 2")
-        x = np.linspace(a, b, 100)
-        y = np.linspace(a, b, 100)
-        Y, X = np.meshgrid(x, y)        
-        x_y = []
-        for i in range(len(x)):
-            for j in range(len(y)):
-                x_y += [[x[i], y[j]]]
-        Z1 = np.array([self.system.f1(x_y[i]) for i in range(len(x_y))])
-        Z1 = Z1.reshape(X.shape)
-        Z2 = np.array([self.system.f2(x_y[i]) for i in range(len(x_y))])
-        Z2 = Z2.reshape(X.shape)
-        plt.contour(X, Y, Z1, [0], colors='red')
-        plt.contour(X, Y, Z2, [0], colors='blue')
-        plt.grid()
+    def draw(self):
+        plt.plot(self.x_interval, self.fx_interval,'ko')
+        plt.plot(self.x, f1(self.x),'black', label='cos(x)+x*sin(x)')
+        plt.plot(self.x, self.lagrange_value(self.x), 'pink', label='Lagrange')
+        plt.plot(self.x, self.newton_value(self.x), 'red', label='Newton')
+        plt.plot(self.x, self.get_spline_values(self.spline_value), 'purple', label='Spline')
+        plt.legend()
         plt.show()
 
-if __name__ == '__main__':
-    calc = Calculator(0.0001, system)
-    print(calc.newton([1, 1]))
-    print(calc.newton_mod([1, 1]))
-    # print(calc.simple_iteration([1, 1]))
-    # print(calc.newton([-0.6, -0.3]))
-    # print(calc.newton([1, 2.5]))
-    # print(calc.newton([-1.0, -2.5]))
-    # calc.draw(-20,20)
-    
-    calc2 = Calculator(0.0001, system2(5))
-    print(calc2.newton([1, 1, 1, 1, 1]))
-    print(calc2.newton_mod([1, 1, 1, 1, 1]))
+    def lagrange_interpolation(self):
+        n = self.values.shape[0]
+        l_n = polynom.Polynomial([0])
 
+        for i in range(n):
+            l_i = polynom.Polynomial([1])
+            for j in range(n):
+                if i != j:
+                    l_i *= polynom.Polynomial([-self.values[j][0], 1]) / (self.values[i][0] - self.values[j][0])
+
+            l_n += self.values[i][1] * l_i
+
+
+        return l_n
+
+    def newton_interpolation(self):
+        l_n = polynom.Polynomial([self.values[0][1]])
+        n = self.values.shape[0]
+        diff_table = self.get_diff_table()
+        poly_factor = polynom.Polynomial([1])
+
+        for i in range(1, n):
+            poly_factor *= polynom.Polynomial([-self.values[i - 1][0], 1])
+            l_n += diff_table[0][i] * poly_factor
+
+        return l_n
+
+
+    def get_diff_table(self):
+        n = self.values.shape[0]
+        table = np.zeros([n, n])
+        table[:, 0] = np.copy(self.values[:, 1])
+
+        for i in range(1, n):
+            for j in range(n - i):
+                x_j = self.values[j][0]
+                x_k = self.values[j + i][0]
+                diff_x = x_k - x_j
+                diff_f = table[j + 1][i - 1] - table[j][i - 1]
+                table[j][i] = diff_f / diff_x
+                
+        return table
+
+
+    def spline_interpolation(self):
+        n = self.values.shape[0]
+        intervals = self.get_h_vector()
+        c_values = self.get_c_vector(intervals, n)
+        s_n = self.get_s_n_for_all_intervals(intervals, c_values, n)
+
+        return s_n
+
+
+    def get_h_vector(self):
+        n = self.values.shape[0] - 1
+        interval = np.zeros(n)
+
+        for i in range(n):
+            interval[i] = self.values[i + 1][0] - self.values[i][0]
+
+        return interval
+
+
+    def get_c_vector(self, intervals, n):
+        intervals_count = n - 1
+        c_matrix = np.zeros([intervals_count - 1, intervals_count - 1])
+        right_val = np.zeros(intervals_count - 1)
+        c = np.zeros(n)
+
+        for i in range(intervals_count - 1):
+            if i > 0:
+                c_matrix[i][i - 1] = intervals[i]
+
+            c_matrix[i][i] = 2 * (intervals[i] + intervals[i + 1])
+
+            if i < intervals_count - 2:
+                c_matrix[i][i + 1] = intervals[i + 1]
+
+            right_val[i] = 6 * (
+                    (self.values[i + 2][1] - self.values[i + 1][1]) / intervals[i + 1] -
+                    (self.values[i + 1][1] - self.values[i][1]) / intervals[i])
+
+        c[1:n - 1] = np.linalg.solve(c_matrix, right_val)
+
+        return c
+
+
+    def get_s_n_for_all_intervals(self, intervals, c_values, n):
+        intervals_count = n - 1
+        s_n = np.empty([intervals_count], polynom.Polynomial)
+
+        for i in range(1, intervals_count + 1):
+            a_i = self.values[i][1]
+            d_i = (c_values[i] - c_values[i - 1]) / intervals[i - 1]
+            b_i = intervals[i - 1] * c_values[i] / 2 - intervals[i - 1] ** 2 * d_i / 6 + (self.values[i][1] - self.values[i - 1][1]) / intervals[i - 1]
+
+            poly_factor = polynom.Polynomial([a_i])
+            poly_factor += b_i * polynom.Polynomial([-self.values[i][0], 1])
+            poly_factor += (c_values[i] / 2) * polynom.Polynomial([-self.values[i][0], 1]) ** 2
+            poly_factor += (d_i / 6) * polynom.Polynomial([-self.values[i][0], 1]) ** 3
+
+            s_n[i - 1] = poly_factor
+
+        return s_n
+
+
+    def get_spline_values(self, s_n):
+        total_points = self.x.shape[0]
+        total_spline = s_n.shape[0]
+        s_x = np.zeros(total_points)
+        number_of_spline = 0
+
+        for i in range(total_points):
+            if number_of_spline < total_spline - 1 and \
+                    self.x[i] > self.x_interval[number_of_spline + 1]:
+                number_of_spline += 1
+
+            s_x[i] = polynom.polyval(self.x[i], s_n[number_of_spline].coef)
+
+        return s_x
+
+
+if __name__ == '__main__':
+    calc = Interpolation()
+    calc.calculate()
+    calc.draw()
